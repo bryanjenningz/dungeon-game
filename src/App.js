@@ -1,9 +1,14 @@
 import React, { Component } from "react";
 import "./App.css";
 
+const randomDimensions = () => ({
+  width: Math.random() * 100 + 20,
+  height: Math.random() * 100 + 20
+});
+
 class App extends Component {
   state = {
-    rooms: [{ width: 200, height: 150 }]
+    rooms: [randomDimensions()]
   }
   render() {
     const { rooms } = this.state;
@@ -11,9 +16,7 @@ class App extends Component {
       <div>
         <div>Dungeon game</div>
         {rooms.map(({ width, height }, i) => (
-          <div style={{ width, height, background: "white" }}>
-
-          </div>
+          <div style={{ width, height, background: "white" }} />
         ))}
       </div>
     )
