@@ -52,10 +52,21 @@ const randomBoxes = count => {
 const BLOCK_WIDTH = 10;
 
 class App extends Component {
-  state = { boxes: randomBoxes(40) };
+  constructor() {
+    super();
+    const boxes = randomBoxes(40);
+    const position = (() => {
+      const box = randomChoice(boxes);
+      return {
+        x: box.x + randomInt(0, box.width),
+        y: box.y + randomInt(0, box.height)
+      };
+    })();
+    this.state = { boxes, position };
+  }
 
   render() {
-    const { boxes } = this.state;
+    const { boxes, position } = this.state;
     return (
       <div>
         <div style={{ position: "relative" }}>
@@ -72,6 +83,16 @@ class App extends Component {
               }}
             />
           ))}
+          <div
+            style={{
+              position: "absolute",
+              left: position.x * BLOCK_WIDTH,
+              top: position.y * BLOCK_WIDTH,
+              width: BLOCK_WIDTH,
+              height: BLOCK_WIDTH,
+              background: "blue"
+            }}
+          />
         </div>
       </div>
     );
