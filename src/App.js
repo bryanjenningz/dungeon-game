@@ -52,15 +52,15 @@ class App extends Component {
   constructor() {
     super();
     const boxes = randomBoxes(40);
-    const position = (box => ({
+    const player = (box => ({
       x: box.x + randomInt(0, box.width),
       y: box.y + randomInt(0, box.height)
     }))(randomChoice(boxes));
-    this.state = { boxes, position };
+    this.state = { boxes, player };
   }
 
   render() {
-    const { boxes, position } = this.state;
+    const { boxes, player } = this.state;
     return (
       <div>
         <div style={{ position: "relative" }}>
@@ -80,8 +80,8 @@ class App extends Component {
           <div
             style={{
               position: "absolute",
-              left: position.x * BLOCK_WIDTH,
-              top: position.y * BLOCK_WIDTH,
+              left: player.x * BLOCK_WIDTH,
+              top: player.y * BLOCK_WIDTH,
               width: BLOCK_WIDTH,
               height: BLOCK_WIDTH,
               background: "blue"
