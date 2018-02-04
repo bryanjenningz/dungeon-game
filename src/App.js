@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./App.css";
 
 const randomDimensions = () => ({
+  id: Math.random().toString,
   width: Math.random() * 16 + 4,
   height: Math.random() * 16 + 4
 });
@@ -73,8 +74,9 @@ const randomRooms = () => {
       bottom: () => randomRoomConnection(room.width, newRoom.width)
     }[side]();
 
-    room[side] = { roomOffset, connectionOffset };
+    room[side] = { roomId: newRoom.id, roomOffset, connectionOffset };
     newRoom[oppositeSide[side]] = {
+      roomId: room.id,
       roomOffset: -roomOffset,
       connectionOffset: -roomOffset + connectionOffset
     };
