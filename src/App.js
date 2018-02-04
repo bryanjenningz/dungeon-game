@@ -10,13 +10,10 @@ const randomDimensions = () => ({
   height: randomInt(5, 21)
 });
 
-const randomSide = () => randomChoice(["left", "right", "top", "bottom"]);
-
 const randomBoxes = count => {
   const boxes = [{ ...randomDimensions(), x: 0, y: 0 }];
   for (let i = 1; i < count; i++) {
     const box = randomChoice(boxes);
-    const side = randomSide();
     const { width, height } = randomDimensions();
     const { x, y } = {
       left: () => ({
@@ -35,7 +32,7 @@ const randomBoxes = count => {
         x: box.x + randomInt(-width + 1, box.width - 1),
         y: box.y + box.height
       })
-    }[side]();
+    }[randomChoice(["left", "right", "top", "bottom"])]();
     boxes.push({ width, height, x, y });
   }
   let [minX, minY] = [0, 0];
