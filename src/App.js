@@ -55,13 +55,10 @@ class App extends Component {
   constructor() {
     super();
     const boxes = randomBoxes(40);
-    const position = (() => {
-      const box = randomChoice(boxes);
-      return {
-        x: box.x + randomInt(0, box.width),
-        y: box.y + randomInt(0, box.height)
-      };
-    })();
+    const position = (box => ({
+      x: box.x + randomInt(0, box.width),
+      y: box.y + randomInt(0, box.height)
+    }))(randomChoice(boxes));
     this.state = { boxes, position };
   }
 
