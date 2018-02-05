@@ -60,18 +60,27 @@ class App extends Component {
   constructor() {
     super();
     const boxes = randomBoxes(40);
-    const player = { ...randomSpawn(boxes), hp: 10 };
+    const player = { ...randomSpawn(boxes), hp: 10, weapon: 0 };
     const foods = range(5).map(() => randomSpawn(boxes));
     const enemies = range(5).map(() => ({ ...randomSpawn(boxes), hp: 3 }));
+    const weapon = randomSpawn(boxes);
     const exit = randomSpawn(boxes);
-    this.state = { boxes, player, foods, enemies, exit, level: 1 };
+    this.state = { boxes, player, foods, enemies, weapon, exit, level: 1 };
   }
 
   componentDidMount() {
     window.addEventListener("keydown", event => {
       const arrows = { 37: "left", 38: "up", 39: "right", 40: "down" };
       if (arrows[event.keyCode]) {
-        const { boxes, player, foods, enemies, exit, level } = this.state;
+        const {
+          boxes,
+          player,
+          foods,
+          enemies,
+          weapon,
+          exit,
+          level
+        } = this.state;
         const { x: dx, y: dy } = {
           left: () => ({ x: -1, y: 0 }),
           right: () => ({ x: 1, y: 0 }),
@@ -117,25 +126,39 @@ class App extends Component {
                 foods: foods.filter(food => food !== maybeFood)
               });
             } else {
-              if (exit && exit.x === newX && exit.y === newY) {
-                const newBoxes = randomBoxes(40);
-                const newPlayer = { ...player, ...randomSpawn(newBoxes) };
-                const newEnemies = range(5).map(() => ({
-                  ...randomSpawn(newBoxes),
-                  hp: level === 1 ? 5 : 7
-                }));
-                const newFoods = range(5).map(() => randomSpawn(newBoxes));
-                const newExit = level === 1 ? randomSpawn(newBoxes) : null;
+              if (weapon && weapon.x === newX && weapon.y === newY) {
                 this.setState({
-                  boxes: newBoxes,
-                  player: newPlayer,
-                  enemies: newEnemies,
-                  foods: newFoods,
-                  exit: newExit,
-                  level: level + 1
+                  player: {
+                    ...player,
+                    x: newX,
+                    y: newY,
+                    weapon: player.weapon + 1
+                  },
+                  weapon: null
                 });
               } else {
-                this.setState({ player: { ...player, x: newX, y: newY } });
+                if (exit && exit.x === newX && exit.y === newY) {
+                  const newBoxes = randomBoxes(40);
+                  const newPlayer = { ...player, ...randomSpawn(newBoxes) };
+                  const newEnemies = range(5).map(() => ({
+                    ...randomSpawn(newBoxes),
+                    hp: level === 1 ? 5 : 7
+                  }));
+                  const newFoods = range(5).map(() => randomSpawn(newBoxes));
+                  const newExit = level === 1 ? randomSpawn(newBoxes) : null;
+                  const newWeapon = randomSpawn(newBoxes);
+                  this.setState({
+                    boxes: newBoxes,
+                    player: newPlayer,
+                    enemies: newEnemies,
+                    foods: newFoods,
+                    weapon: newWeapon,
+                    exit: newExit,
+                    level: level + 1
+                  });
+                } else {
+                  this.setState({ player: { ...player, x: newX, y: newY } });
+                }
               }
             }
           }
@@ -145,7 +168,7 @@ class App extends Component {
   }
 
   render() {
-    const { boxes, player, foods, enemies, exit, level } = this.state;
+    const { boxes, player, foods, enemies, weapon, exit, level } = this.state;
     return (
       <div
         style={{
@@ -170,6 +193,10 @@ class App extends Component {
           }}
         >
           <div>Level: {level}</div>
+          <div>
+            WEAPON:{" "}
+            {["Hands", "Brass Knuckles", "Dagger", "Sword"][player.weapon]}
+          </div>
           <div>HP: {player.hp}</div>
         </div>
         <div
@@ -192,6 +219,18 @@ class App extends Component {
               }}
             />
           ))}
+          {weapon ? (
+            <div
+              style={{
+                position: "absolute",
+                left: weapon.x * BLOCK_WIDTH,
+                top: weapon.y * BLOCK_WIDTH,
+                width: BLOCK_WIDTH,
+                height: BLOCK_WIDTH,
+                background: "yellow"
+              }}
+            />
+          ) : null}
           {exit ? (
             <div
               style={{
