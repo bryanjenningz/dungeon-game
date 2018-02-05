@@ -59,6 +59,33 @@ class App extends Component {
     this.state = { boxes, player };
   }
 
+  componentDidMount() {
+    window.addEventListener("keydown", event => {
+      const arrows = { 37: "left", 38: "up", 39: "right", 40: "down" };
+      if (arrows[event.keyCode]) {
+        const { boxes, player: { x, y } } = this.state;
+        const { x: dx, y: dy } = {
+          left: () => ({ x: -1, y: 0 }),
+          right: () => ({ x: 1, y: 0 }),
+          up: () => ({ x: 0, y: -1 }),
+          down: () => ({ x: 0, y: 1 })
+        }[arrows[event.keyCode]]();
+        const newX = x + dx;
+        const newY = y + dy;
+        const isInBounds = boxes.some(
+          box =>
+            box.x <= newX &&
+            newX < box.x + box.width &&
+            box.y <= newY &&
+            newY < box.y + box.height
+        );
+        if (isInBounds) {
+          this.setState({ player: { x: newX, y: newY } });
+        }
+      }
+    });
+  }
+
   render() {
     const { boxes, player } = this.state;
     return (
