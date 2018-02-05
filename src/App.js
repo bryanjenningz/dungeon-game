@@ -61,17 +61,18 @@ class App extends Component {
 
     const boxes = randomBoxes(40);
     const player = { ...randomSpawn(), hp: 10 };
+    const foods = range(5).map(randomSpawn);
     const enemies = range(5)
       .map(() => ({ ...randomSpawn(), hp: 3 }))
       .filter(enemy => !(enemy.x === player.x && enemy.y === player.y));
-    this.state = { boxes, player, enemies };
+    this.state = { boxes, player, foods, enemies };
   }
 
   componentDidMount() {
     window.addEventListener("keydown", event => {
       const arrows = { 37: "left", 38: "up", 39: "right", 40: "down" };
       if (arrows[event.keyCode]) {
-        const { boxes, player, enemies } = this.state;
+        const { boxes, player, foods, enemies } = this.state;
         const { x: dx, y: dy } = {
           left: () => ({ x: -1, y: 0 }),
           right: () => ({ x: 1, y: 0 }),
@@ -108,7 +109,17 @@ class App extends Component {
               });
             }
           } else {
-            this.setState({ player: { ...player, x: newX, y: newY } });
+            const maybeFood = foods.find(
+              food => food.x === newX && food.y === newY
+            );
+            if (maybeFood) {
+              this.setState({
+                player: { ...player, x: newX, y: newY, hp: player.hp + 2 },
+                foods: foods.filter(food => food !== maybeFood)
+              });
+            } else {
+              this.setState({ player: { ...player, x: newX, y: newY } });
+            }
           }
         }
       }
@@ -116,7 +127,7 @@ class App extends Component {
   }
 
   render() {
-    const { boxes, player, enemies } = this.state;
+    const { boxes, player, foods, enemies } = this.state;
     return (
       <div
         style={{
@@ -159,6 +170,19 @@ class App extends Component {
                 width: width * BLOCK_WIDTH,
                 height: height * BLOCK_WIDTH,
                 background: "white"
+              }}
+            />
+          ))}
+          {foods.map(({ x, y }, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: x * BLOCK_WIDTH,
+                top: y * BLOCK_WIDTH,
+                width: BLOCK_WIDTH,
+                height: BLOCK_WIDTH,
+                background: "green"
               }}
             />
           ))}
