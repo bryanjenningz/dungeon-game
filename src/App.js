@@ -114,8 +114,7 @@ class App extends Component {
           weapon,
           exit,
           floor,
-          gameWin,
-          isDark
+          gameWin
         } = this.state;
         if (gameWin !== null) return;
         const { x: dx, y: dy } = {
