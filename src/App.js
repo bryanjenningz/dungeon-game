@@ -47,6 +47,7 @@ const randomBoxes = count => {
 };
 
 const BLOCK_WIDTH = 10;
+const SCREEN_WIDTH = 500;
 
 class App extends Component {
   constructor() {
@@ -89,8 +90,22 @@ class App extends Component {
   render() {
     const { boxes, player } = this.state;
     return (
-      <div>
-        <div style={{ position: "relative" }}>
+      <div
+        style={{
+          width: SCREEN_WIDTH,
+          height: SCREEN_WIDTH,
+          border: "1px solid black",
+          margin: "0 auto",
+          overflow: "hidden"
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+            left: SCREEN_WIDTH / 2 - player.x * BLOCK_WIDTH,
+            top: SCREEN_WIDTH / 2 - player.y * BLOCK_WIDTH
+          }}
+        >
           {boxes.map(({ width, height, x, y }, i) => (
             <div
               key={i}
