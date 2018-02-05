@@ -60,9 +60,9 @@ class App extends Component {
     const randomSpawn = () => randomSpawnInBox(randomChoice(boxes));
 
     const boxes = randomBoxes(40);
-    const player = randomSpawn();
+    const player = { ...randomSpawn(), hp: 10 };
     const enemies = range(5)
-      .map(randomSpawn)
+      .map(() => ({ ...randomSpawn(), hp: 3 }))
       .filter(enemy => !(enemy.x === player.x && enemy.y === player.y));
     this.state = { boxes, player, enemies };
   }
@@ -71,15 +71,15 @@ class App extends Component {
     window.addEventListener("keydown", event => {
       const arrows = { 37: "left", 38: "up", 39: "right", 40: "down" };
       if (arrows[event.keyCode]) {
-        const { boxes, player: { x, y } } = this.state;
+        const { boxes, player } = this.state;
         const { x: dx, y: dy } = {
           left: () => ({ x: -1, y: 0 }),
           right: () => ({ x: 1, y: 0 }),
           up: () => ({ x: 0, y: -1 }),
           down: () => ({ x: 0, y: 1 })
         }[arrows[event.keyCode]]();
-        const newX = x + dx;
-        const newY = y + dy;
+        const newX = player.x + dx;
+        const newY = player.y + dy;
         const isInBounds = boxes.some(
           box =>
             box.x <= newX &&
@@ -88,7 +88,7 @@ class App extends Component {
             newY < box.y + box.height
         );
         if (isInBounds) {
-          this.setState({ player: { x: newX, y: newY } });
+          this.setState({ player: { ...player, x: newX, y: newY } });
         }
       }
     });
@@ -106,6 +106,21 @@ class App extends Component {
           overflow: "hidden"
         }}
       >
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            width: SCREEN_WIDTH,
+            height: SCREEN_WIDTH * 0.1,
+            background: "rgba(0, 0, 0, 0.1)",
+            zIndex: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          HP: {player.hp}
+        </div>
         <div
           style={{
             position: "relative",
