@@ -91,6 +91,7 @@ class App extends Component {
       player,
       foods,
       enemies,
+      boss: null,
       weapon,
       exit,
       floor: 1,
@@ -107,6 +108,7 @@ class App extends Component {
           player,
           foods,
           enemies,
+          boss,
           weapon,
           exit,
           floor,
@@ -129,9 +131,15 @@ class App extends Component {
             newY < box.y + box.height
         );
         if (isInBounds) {
-          const maybeEnemy = enemies.find(
-            enemy => enemy.x === newX && enemy.y === newY
-          );
+          const maybeEnemy =
+            enemies.find(enemy => enemy.x === newX && enemy.y === newY) ||
+            (boss &&
+            boss.x <= newX &&
+            newX <= boss.x + 1 &&
+            boss.y <= newY &&
+            newY <= boss.y + 1
+              ? boss
+              : null);
           if (maybeEnemy) {
             const weaponToDamage = [3, 4, 6, 8];
             const levelToDamage = [0, 0, 1, 2, 3];
@@ -142,6 +150,23 @@ class App extends Component {
                 weaponToDamage[player.weapon] +
                   levelToDamage[xpToLevel(player.xp)]
               );
+            if (maybeEnemy === boss) {
+              if (newEnemyHp <= 0) {
+                this.setState({ gameWin: true });
+              } else {
+                const newHp = player.hp - randomInt(5, 10);
+                if (newHp <= 0) {
+                  this.setState({ gameWin: false });
+                } else {
+                  this.setState({
+                    player: { ...player, hp: newHp },
+                    boss: { ...boss, hp: newEnemyHp }
+                  });
+                }
+              }
+              return;
+            }
+
             if (newEnemyHp <= 0) {
               const floorToXp = [0, 2, 3, 4];
               this.setState({
@@ -196,10 +221,13 @@ class App extends Component {
                   const newFoods = range(5).map(() => randomSpawn(newBoxes));
                   const newExit = floor === 1 ? randomSpawn(newBoxes) : null;
                   const newWeapon = randomSpawn(newBoxes);
+                  const newBoss =
+                    floor === 2 ? { ...randomSpawn(newBoxes), hp: 20 } : null;
                   this.setState({
                     boxes: newBoxes,
                     player: newPlayer,
                     enemies: newEnemies,
+                    boss: newBoss,
                     foods: newFoods,
                     weapon: newWeapon,
                     exit: newExit,
@@ -222,6 +250,7 @@ class App extends Component {
       player,
       foods,
       enemies,
+      boss,
       weapon,
       exit,
       floor,
@@ -283,6 +312,18 @@ class App extends Component {
                   }}
                 />
               ))}
+              {boss ? (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: boss.x * BLOCK_WIDTH,
+                    top: boss.y * BLOCK_WIDTH,
+                    width: BLOCK_WIDTH * 2,
+                    height: BLOCK_WIDTH * 2,
+                    background: "red"
+                  }}
+                />
+              ) : null}
               {weapon ? (
                 <div
                   style={{
