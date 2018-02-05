@@ -86,7 +86,16 @@ class App extends Component {
     const enemies = range(5).map(() => ({ ...randomSpawn(boxes), hp: 3 }));
     const weapon = randomSpawn(boxes);
     const exit = randomSpawn(boxes);
-    this.state = { boxes, player, foods, enemies, weapon, exit, floor: 1 };
+    this.state = {
+      boxes,
+      player,
+      foods,
+      enemies,
+      weapon,
+      exit,
+      floor: 1,
+      gameWin: null
+    };
   }
 
   componentDidMount() {
@@ -100,8 +109,10 @@ class App extends Component {
           enemies,
           weapon,
           exit,
-          floor
+          floor,
+          gameWin
         } = this.state;
+        if (gameWin !== null) return;
         const { x: dx, y: dy } = {
           left: () => ({ x: -1, y: 0 }),
           right: () => ({ x: 1, y: 0 }),
@@ -122,7 +133,7 @@ class App extends Component {
             enemy => enemy.x === newX && enemy.y === newY
           );
           if (maybeEnemy) {
-            const weaponToDamage = [0, 4, 6, 8];
+            const weaponToDamage = [3, 4, 6, 8];
             const levelToDamage = [0, 0, 1, 2, 3];
             const newEnemyHp =
               maybeEnemy.hp -
@@ -140,13 +151,19 @@ class App extends Component {
             } else {
               const floorToDamage = [0, 3, 4, 5];
               const newHp = player.hp - randomInt(1, floorToDamage[floor]);
-              this.setState({
-                enemies: enemies.map(
-                  enemy =>
-                    enemy === maybeEnemy ? { ...enemy, hp: newEnemyHp } : enemy
-                ),
-                player: { ...player, hp: newHp }
-              });
+              if (newHp <= 0) {
+                this.setState({ gameWin: false });
+              } else {
+                this.setState({
+                  enemies: enemies.map(
+                    enemy =>
+                      enemy === maybeEnemy
+                        ? { ...enemy, hp: newEnemyHp }
+                        : enemy
+                  ),
+                  player: { ...player, hp: newHp }
+                });
+              }
             }
           } else {
             const maybeFood = foods.find(
@@ -200,7 +217,16 @@ class App extends Component {
   }
 
   render() {
-    const { boxes, player, foods, enemies, weapon, exit, floor } = this.state;
+    const {
+      boxes,
+      player,
+      foods,
+      enemies,
+      weapon,
+      exit,
+      floor,
+      gameWin
+    } = this.state;
     return (
       <div
         style={{
@@ -208,113 +234,137 @@ class App extends Component {
           height: SCREEN_WIDTH,
           border: "1px solid black",
           margin: "0 auto",
-          overflow: "hidden"
+          overflow: "hidden",
+          position: "relative"
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            width: SCREEN_WIDTH,
-            height: SCREEN_WIDTH * 0.1,
-            background: "rgba(0, 0, 0, 0.1)",
-            zIndex: 1,
-            display: "flex",
-            justifyContent: "space-around",
-            alignItems: "center",
-            fontSize: 11
-          }}
-        >
-          <div>FLOOR: {floor}</div>
-          <div>LEVEL: {xpToLevel(player.xp)}</div>
-          <div>XP UNTIL NEXT LEVEL: {xpUntilNextLevel(player.xp)}</div>
+        {gameWin === null ? (
           <div>
-            WEAPON:{" "}
-            {["Hands", "Brass Knuckles", "Dagger", "Sword"][player.weapon]}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                width: SCREEN_WIDTH,
+                height: SCREEN_WIDTH * 0.1,
+                background: "rgba(0, 0, 0, 0.1)",
+                zIndex: 1,
+                display: "flex",
+                justifyContent: "space-around",
+                alignItems: "center",
+                fontSize: 11
+              }}
+            >
+              <div>FLOOR: {floor}</div>
+              <div>LEVEL: {xpToLevel(player.xp)}</div>
+              <div>XP UNTIL NEXT LEVEL: {xpUntilNextLevel(player.xp)}</div>
+              <div>
+                WEAPON:{" "}
+                {["Hands", "Brass Knuckles", "Dagger", "Sword"][player.weapon]}
+              </div>
+              <div>HP: {player.hp}</div>
+            </div>
+            <div
+              style={{
+                position: "relative",
+                left: SCREEN_WIDTH / 2 - player.x * BLOCK_WIDTH,
+                top: SCREEN_WIDTH / 2 - player.y * BLOCK_WIDTH
+              }}
+            >
+              {boxes.map(({ width, height, x, y }, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    left: x * BLOCK_WIDTH,
+                    top: y * BLOCK_WIDTH,
+                    width: width * BLOCK_WIDTH,
+                    height: height * BLOCK_WIDTH,
+                    background: "white"
+                  }}
+                />
+              ))}
+              {weapon ? (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: weapon.x * BLOCK_WIDTH,
+                    top: weapon.y * BLOCK_WIDTH,
+                    width: BLOCK_WIDTH,
+                    height: BLOCK_WIDTH,
+                    background: "yellow"
+                  }}
+                />
+              ) : null}
+              {exit ? (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: exit.x * BLOCK_WIDTH,
+                    top: exit.y * BLOCK_WIDTH,
+                    width: BLOCK_WIDTH,
+                    height: BLOCK_WIDTH,
+                    background: "black"
+                  }}
+                />
+              ) : null}
+              {foods.map(({ x, y }, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    left: x * BLOCK_WIDTH,
+                    top: y * BLOCK_WIDTH,
+                    width: BLOCK_WIDTH,
+                    height: BLOCK_WIDTH,
+                    background: "green"
+                  }}
+                />
+              ))}
+              {enemies.map(({ x, y }, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    left: x * BLOCK_WIDTH,
+                    top: y * BLOCK_WIDTH,
+                    width: BLOCK_WIDTH,
+                    height: BLOCK_WIDTH,
+                    background: "red"
+                  }}
+                />
+              ))}
+              <div
+                style={{
+                  position: "absolute",
+                  left: player.x * BLOCK_WIDTH,
+                  top: player.y * BLOCK_WIDTH,
+                  width: BLOCK_WIDTH,
+                  height: BLOCK_WIDTH,
+                  background: "blue"
+                }}
+              />
+            </div>
           </div>
-          <div>HP: {player.hp}</div>
-        </div>
-        <div
-          style={{
-            position: "relative",
-            left: SCREEN_WIDTH / 2 - player.x * BLOCK_WIDTH,
-            top: SCREEN_WIDTH / 2 - player.y * BLOCK_WIDTH
-          }}
-        >
-          {boxes.map(({ width, height, x, y }, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: x * BLOCK_WIDTH,
-                top: y * BLOCK_WIDTH,
-                width: width * BLOCK_WIDTH,
-                height: height * BLOCK_WIDTH,
-                background: "white"
-              }}
-            />
-          ))}
-          {weapon ? (
-            <div
-              style={{
-                position: "absolute",
-                left: weapon.x * BLOCK_WIDTH,
-                top: weapon.y * BLOCK_WIDTH,
-                width: BLOCK_WIDTH,
-                height: BLOCK_WIDTH,
-                background: "yellow"
-              }}
-            />
-          ) : null}
-          {exit ? (
-            <div
-              style={{
-                position: "absolute",
-                left: exit.x * BLOCK_WIDTH,
-                top: exit.y * BLOCK_WIDTH,
-                width: BLOCK_WIDTH,
-                height: BLOCK_WIDTH,
-                background: "black"
-              }}
-            />
-          ) : null}
-          {foods.map(({ x, y }, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: x * BLOCK_WIDTH,
-                top: y * BLOCK_WIDTH,
-                width: BLOCK_WIDTH,
-                height: BLOCK_WIDTH,
-                background: "green"
-              }}
-            />
-          ))}
-          {enemies.map(({ x, y }, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: x * BLOCK_WIDTH,
-                top: y * BLOCK_WIDTH,
-                width: BLOCK_WIDTH,
-                height: BLOCK_WIDTH,
-                background: "red"
-              }}
-            />
-          ))}
+        ) : (
           <div
             style={{
+              background: "black",
               position: "absolute",
-              left: player.x * BLOCK_WIDTH,
-              top: player.y * BLOCK_WIDTH,
-              width: BLOCK_WIDTH,
-              height: BLOCK_WIDTH,
-              background: "blue"
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
             }}
-          />
-        </div>
+          >
+            {gameWin === true
+              ? "Congratulations! You win!"
+              : "Oops, you died :("}
+          </div>
+        )}
       </div>
     );
   }
