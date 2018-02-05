@@ -49,6 +49,22 @@ const randomBoxes = count => {
 const BLOCK_WIDTH = 10;
 const SCREEN_WIDTH = 500;
 
+const levelToXp = [0, 5, 15, 30, 50, 100];
+
+const xpToLevel = xp => {
+  let level;
+  for (let i = 0; i < levelToXp.length; i++) {
+    if (xp >= levelToXp[i]) {
+      level = i + 1;
+    } else {
+      break;
+    }
+  }
+  return level;
+};
+
+const xpUntilNextLevel = xp => levelToXp[xpToLevel(xp)] - xp;
+
 const range = n => Array.from({ length: n }, (_, i) => i);
 const randomSpawnInBox = box => ({
   x: box.x + randomInt(0, box.width),
@@ -60,7 +76,12 @@ class App extends Component {
   constructor() {
     super();
     const boxes = randomBoxes(40);
-    const player = { ...randomSpawn(boxes), hp: 10, weapon: 0, xp: 0 };
+    const player = {
+      ...randomSpawn(boxes),
+      hp: 10,
+      weapon: 0,
+      xp: 0
+    };
     const foods = range(5).map(() => randomSpawn(boxes));
     const enemies = range(5).map(() => ({ ...randomSpawn(boxes), hp: 3 }));
     const weapon = randomSpawn(boxes);
@@ -96,15 +117,17 @@ class App extends Component {
             box.y <= newY &&
             newY < box.y + box.height
         );
-        const maybeEnemy = enemies.find(
-          enemy => enemy.x === newX && enemy.y === newY
-        );
         if (isInBounds) {
+          const maybeEnemy = enemies.find(
+            enemy => enemy.x === newX && enemy.y === newY
+          );
           if (maybeEnemy) {
             const newEnemyHp = maybeEnemy.hp - randomInt(1, 4);
             if (newEnemyHp <= 0) {
+              const floorToXp = [0, 2, 3, 4];
               this.setState({
-                enemies: enemies.filter(enemy => enemy !== maybeEnemy)
+                enemies: enemies.filter(enemy => enemy !== maybeEnemy),
+                player: { ...player, xp: player.xp + floorToXp[floor] }
               });
             } else {
               const newHp = player.hp - randomInt(1, 3);
@@ -189,10 +212,13 @@ class App extends Component {
             zIndex: 1,
             display: "flex",
             justifyContent: "space-around",
-            alignItems: "center"
+            alignItems: "center",
+            fontSize: 11
           }}
         >
-          <div>Floor: {floor}</div>
+          <div>FLOOR: {floor}</div>
+          <div>LEVEL: {xpToLevel(player.xp)}</div>
+          <div>XP UNTIL NEXT LEVEL: {xpUntilNextLevel(player.xp)}</div>
           <div>
             WEAPON:{" "}
             {["Hands", "Brass Knuckles", "Dagger", "Sword"][player.weapon]}
