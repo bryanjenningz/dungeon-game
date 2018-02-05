@@ -122,7 +122,15 @@ class App extends Component {
             enemy => enemy.x === newX && enemy.y === newY
           );
           if (maybeEnemy) {
-            const newEnemyHp = maybeEnemy.hp - randomInt(1, 4);
+            const weaponToDamage = [0, 4, 6, 8];
+            const levelToDamage = [0, 0, 1, 2, 3];
+            const newEnemyHp =
+              maybeEnemy.hp -
+              randomInt(
+                1,
+                weaponToDamage[player.weapon] +
+                  levelToDamage[xpToLevel(player.xp)]
+              );
             if (newEnemyHp <= 0) {
               const floorToXp = [0, 2, 3, 4];
               this.setState({
@@ -130,7 +138,8 @@ class App extends Component {
                 player: { ...player, xp: player.xp + floorToXp[floor] }
               });
             } else {
-              const newHp = player.hp - randomInt(1, 3);
+              const floorToDamage = [0, 3, 4, 5];
+              const newHp = player.hp - randomInt(1, floorToDamage[floor]);
               this.setState({
                 enemies: enemies.map(
                   enemy =>
