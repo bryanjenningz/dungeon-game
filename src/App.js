@@ -65,14 +65,15 @@ class App extends Component {
     const enemies = range(5)
       .map(() => ({ ...randomSpawn(), hp: 3 }))
       .filter(enemy => !(enemy.x === player.x && enemy.y === player.y));
-    this.state = { boxes, player, foods, enemies };
+    const exit = randomSpawn();
+    this.state = { boxes, player, foods, enemies, exit, level: 1 };
   }
 
   componentDidMount() {
     window.addEventListener("keydown", event => {
       const arrows = { 37: "left", 38: "up", 39: "right", 40: "down" };
       if (arrows[event.keyCode]) {
-        const { boxes, player, foods, enemies } = this.state;
+        const { boxes, player, foods, enemies, exit, level } = this.state;
         const { x: dx, y: dy } = {
           left: () => ({ x: -1, y: 0 }),
           right: () => ({ x: 1, y: 0 }),
@@ -118,7 +119,14 @@ class App extends Component {
                 foods: foods.filter(food => food !== maybeFood)
               });
             } else {
-              this.setState({ player: { ...player, x: newX, y: newY } });
+              if (exit.x === newX && exit.y === newY) {
+                this.setState({
+                  player: { ...player, x: newX, y: newY },
+                  level: level + 1
+                });
+              } else {
+                this.setState({ player: { ...player, x: newX, y: newY } });
+              }
             }
           }
         }
@@ -127,7 +135,7 @@ class App extends Component {
   }
 
   render() {
-    const { boxes, player, foods, enemies } = this.state;
+    const { boxes, player, foods, enemies, exit, level } = this.state;
     return (
       <div
         style={{
@@ -147,11 +155,12 @@ class App extends Component {
             background: "rgba(0, 0, 0, 0.1)",
             zIndex: 1,
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "space-around",
             alignItems: "center"
           }}
         >
-          HP: {player.hp}
+          <div>Level: {level}</div>
+          <div>HP: {player.hp}</div>
         </div>
         <div
           style={{
@@ -173,6 +182,18 @@ class App extends Component {
               }}
             />
           ))}
+          {exit ? (
+            <div
+              style={{
+                position: "absolute",
+                left: exit.x * BLOCK_WIDTH,
+                top: exit.y * BLOCK_WIDTH,
+                width: BLOCK_WIDTH,
+                height: BLOCK_WIDTH,
+                background: "black"
+              }}
+            />
+          ) : null}
           {foods.map(({ x, y }, i) => (
             <div
               key={i}
