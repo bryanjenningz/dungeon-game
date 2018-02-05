@@ -49,23 +49,21 @@ const randomBoxes = count => {
 const BLOCK_WIDTH = 10;
 const SCREEN_WIDTH = 500;
 
+const range = n => Array.from({ length: n }, (_, i) => i);
+const randomSpawnInBox = box => ({
+  x: box.x + randomInt(0, box.width),
+  y: box.y + randomInt(0, box.height)
+});
+const randomSpawn = boxes => randomSpawnInBox(randomChoice(boxes));
+
 class App extends Component {
   constructor() {
     super();
-    const range = n => Array.from({ length: n }, (_, i) => i);
-    const randomSpawnInBox = box => ({
-      x: box.x + randomInt(0, box.width),
-      y: box.y + randomInt(0, box.height)
-    });
-    const randomSpawn = () => randomSpawnInBox(randomChoice(boxes));
-
     const boxes = randomBoxes(40);
-    const player = { ...randomSpawn(), hp: 10 };
-    const foods = range(5).map(randomSpawn);
-    const enemies = range(5)
-      .map(() => ({ ...randomSpawn(), hp: 3 }))
-      .filter(enemy => !(enemy.x === player.x && enemy.y === player.y));
-    const exit = randomSpawn();
+    const player = { ...randomSpawn(boxes), hp: 10 };
+    const foods = range(5).map(() => randomSpawn(boxes));
+    const enemies = range(5).map(() => ({ ...randomSpawn(boxes), hp: 3 }));
+    const exit = randomSpawn(boxes);
     this.state = { boxes, player, foods, enemies, exit, level: 1 };
   }
 
@@ -119,9 +117,21 @@ class App extends Component {
                 foods: foods.filter(food => food !== maybeFood)
               });
             } else {
-              if (exit.x === newX && exit.y === newY) {
+              if (exit && exit.x === newX && exit.y === newY) {
+                const newBoxes = randomBoxes(40);
+                const newPlayer = { ...player, ...randomSpawn(newBoxes) };
+                const newEnemies = range(5).map(() => ({
+                  ...randomSpawn(newBoxes),
+                  hp: level === 1 ? 5 : 7
+                }));
+                const newFoods = range(5).map(() => randomSpawn(newBoxes));
+                const newExit = level === 1 ? randomSpawn(newBoxes) : null;
                 this.setState({
-                  player: { ...player, x: newX, y: newY },
+                  boxes: newBoxes,
+                  player: newPlayer,
+                  enemies: newEnemies,
+                  foods: newFoods,
+                  exit: newExit,
                   level: level + 1
                 });
               } else {
