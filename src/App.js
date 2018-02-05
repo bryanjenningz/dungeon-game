@@ -60,12 +60,12 @@ class App extends Component {
   constructor() {
     super();
     const boxes = randomBoxes(40);
-    const player = { ...randomSpawn(boxes), hp: 10, weapon: 0 };
+    const player = { ...randomSpawn(boxes), hp: 10, weapon: 0, xp: 0 };
     const foods = range(5).map(() => randomSpawn(boxes));
     const enemies = range(5).map(() => ({ ...randomSpawn(boxes), hp: 3 }));
     const weapon = randomSpawn(boxes);
     const exit = randomSpawn(boxes);
-    this.state = { boxes, player, foods, enemies, weapon, exit, level: 1 };
+    this.state = { boxes, player, foods, enemies, weapon, exit, floor: 1 };
   }
 
   componentDidMount() {
@@ -79,7 +79,7 @@ class App extends Component {
           enemies,
           weapon,
           exit,
-          level
+          floor
         } = this.state;
         const { x: dx, y: dy } = {
           left: () => ({ x: -1, y: 0 }),
@@ -142,10 +142,10 @@ class App extends Component {
                   const newPlayer = { ...player, ...randomSpawn(newBoxes) };
                   const newEnemies = range(5).map(() => ({
                     ...randomSpawn(newBoxes),
-                    hp: level === 1 ? 5 : 7
+                    hp: floor === 1 ? 5 : 7
                   }));
                   const newFoods = range(5).map(() => randomSpawn(newBoxes));
-                  const newExit = level === 1 ? randomSpawn(newBoxes) : null;
+                  const newExit = floor === 1 ? randomSpawn(newBoxes) : null;
                   const newWeapon = randomSpawn(newBoxes);
                   this.setState({
                     boxes: newBoxes,
@@ -154,7 +154,7 @@ class App extends Component {
                     foods: newFoods,
                     weapon: newWeapon,
                     exit: newExit,
-                    level: level + 1
+                    floor: floor + 1
                   });
                 } else {
                   this.setState({ player: { ...player, x: newX, y: newY } });
@@ -168,7 +168,7 @@ class App extends Component {
   }
 
   render() {
-    const { boxes, player, foods, enemies, weapon, exit, level } = this.state;
+    const { boxes, player, foods, enemies, weapon, exit, floor } = this.state;
     return (
       <div
         style={{
@@ -192,7 +192,7 @@ class App extends Component {
             alignItems: "center"
           }}
         >
-          <div>Level: {level}</div>
+          <div>Floor: {floor}</div>
           <div>
             WEAPON:{" "}
             {["Hands", "Brass Knuckles", "Dagger", "Sword"][player.weapon]}
