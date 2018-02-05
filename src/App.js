@@ -71,7 +71,7 @@ class App extends Component {
     window.addEventListener("keydown", event => {
       const arrows = { 37: "left", 38: "up", 39: "right", 40: "down" };
       if (arrows[event.keyCode]) {
-        const { boxes, player } = this.state;
+        const { boxes, player, enemies } = this.state;
         const { x: dx, y: dy } = {
           left: () => ({ x: -1, y: 0 }),
           right: () => ({ x: 1, y: 0 }),
@@ -87,8 +87,29 @@ class App extends Component {
             box.y <= newY &&
             newY < box.y + box.height
         );
+        const maybeEnemy = enemies.find(
+          enemy => enemy.x === newX && enemy.y === newY
+        );
         if (isInBounds) {
-          this.setState({ player: { ...player, x: newX, y: newY } });
+          if (maybeEnemy) {
+            const newEnemyHp = maybeEnemy.hp - randomInt(1, 4);
+            if (newEnemyHp <= 0) {
+              this.setState({
+                enemies: enemies.filter(enemy => enemy !== maybeEnemy)
+              });
+            } else {
+              const newHp = player.hp - randomInt(1, 3);
+              this.setState({
+                enemies: enemies.map(
+                  enemy =>
+                    enemy === maybeEnemy ? { ...enemy, hp: newEnemyHp } : enemy
+                ),
+                player: { ...player, hp: newHp }
+              });
+            }
+          } else {
+            this.setState({ player: { ...player, x: newX, y: newY } });
+          }
         }
       }
     });
