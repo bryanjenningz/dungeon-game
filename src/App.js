@@ -52,12 +52,19 @@ const SCREEN_WIDTH = 500;
 class App extends Component {
   constructor() {
     super();
-    const boxes = randomBoxes(40);
-    const player = (box => ({
+    const range = n => Array.from({ length: n }, (_, i) => i);
+    const randomSpawnInBox = box => ({
       x: box.x + randomInt(0, box.width),
       y: box.y + randomInt(0, box.height)
-    }))(randomChoice(boxes));
-    this.state = { boxes, player };
+    });
+    const randomSpawn = () => randomSpawnInBox(randomChoice(boxes));
+
+    const boxes = randomBoxes(40);
+    const player = randomSpawn();
+    const enemies = range(5)
+      .map(randomSpawn)
+      .filter(enemy => !(enemy.x === player.x && enemy.y === player.y));
+    this.state = { boxes, player, enemies };
   }
 
   componentDidMount() {
@@ -88,7 +95,7 @@ class App extends Component {
   }
 
   render() {
-    const { boxes, player } = this.state;
+    const { boxes, player, enemies } = this.state;
     return (
       <div
         style={{
@@ -116,6 +123,19 @@ class App extends Component {
                 width: width * BLOCK_WIDTH,
                 height: height * BLOCK_WIDTH,
                 background: "white"
+              }}
+            />
+          ))}
+          {enemies.map(({ x, y }, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: x * BLOCK_WIDTH,
+                top: y * BLOCK_WIDTH,
+                width: BLOCK_WIDTH,
+                height: BLOCK_WIDTH,
+                background: "red"
               }}
             />
           ))}
